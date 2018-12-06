@@ -8132,6 +8132,8 @@ static void f_execute(typval_T *argvars, typval_T *rettv, FunPtr fptr)
     return;
   }
 
+  int save_msg_col = msg_col;
+  int should_restore_col = 0;
   if (argvars[1].v_type != VAR_UNKNOWN) {
     char buf[NUMBUFLEN];
     const char *const s = tv_get_string_buf_chk(&argvars[1], buf);
@@ -8141,6 +8143,7 @@ static void f_execute(typval_T *argvars, typval_T *rettv, FunPtr fptr)
     }
     if (strncmp(s, "silent", 6) == 0) {
       msg_silent++;
+      should_restore_col = 1;
     }
     if (strcmp(s, "silent!") == 0) {
       emsg_silent = true;
@@ -8148,6 +8151,7 @@ static void f_execute(typval_T *argvars, typval_T *rettv, FunPtr fptr)
     }
   } else {
     msg_silent++;
+    should_restore_col = 1;
   }
 
   garray_T capture_local;
@@ -8178,6 +8182,8 @@ static void f_execute(typval_T *argvars, typval_T *rettv, FunPtr fptr)
   rettv->vval.v_string = capture_ga->ga_data;
 
   capture_ga = save_capture_ga;
+  if (should_restore_col)
+      msg_col = save_msg_col;
 }
 
 /// "exepath()" function
